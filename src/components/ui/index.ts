@@ -11,6 +11,7 @@ export type { IconName } from "./icons";
 export { ListGroup, ListRow } from "./list-row";
 export { ListingCard } from "./listing-card";
 export { PolicyCard } from "./policy-card";
+export { SafeAreaView } from "./safe-area-view";
 export { SegmentedControl } from "./segmented-control";
 export type { SegmentOption } from "./segmented-control";
 export { Stepper } from "./stepper";
