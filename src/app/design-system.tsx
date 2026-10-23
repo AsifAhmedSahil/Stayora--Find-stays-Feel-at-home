@@ -17,7 +17,6 @@ import {
   useWindowDimensions,
   type LayoutChangeEvent,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { StayoraWordmark } from "@/components/brand/stayora-wordmark";
 import {
   Alert,
@@ -31,6 +30,7 @@ import {
   ListRow,
   ListingCard,
   PolicyCard,
+  SafeAreaView,
   SegmentedControl,
   Stepper,
   Surface,

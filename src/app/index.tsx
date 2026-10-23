@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link } from "expo-router";
 import { Pressable, ScrollView, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { StayoraWordmark } from "@/components/brand/stayora-wordmark";
 import {
@@ -10,6 +9,7 @@ import {
   Chip,
   Icon,
   ListingCard,
+  SafeAreaView,
   TextField,
 } from "@/components/ui";
 
