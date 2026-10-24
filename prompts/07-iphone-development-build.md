@@ -1,6 +1,6 @@
 # 07 · iPhone development build
 
-Status: approved
+Status: done
 
 ## Goal
 Run Stayora on the user's physical iPhone with an SDK 57 development build instead of the incompatible App Store Expo Go.
@@ -41,3 +41,10 @@ Check the EAS profile shape, run Expo dependency compatibility checks, TypeScrip
 
 ## AGENTS.md updates
 In `## Expo`, replace the generic native-library Expo Go guidance with the SDK 57 physical-iPhone development-build requirement and the EAS dev-client start workflow. Preserve the existing rule to check version-specific Expo documentation.
+
+## Result
+Picked up again on 2026-10-24, after Expo Go (SDK 58) failed on the SDK 57 bundle with "Cannot find native module 'ExpoAsset'".
+- Added `expo-dev-client` ~57.0.20 (`npx expo install --npm`; the stray `yarn.lock` makes the default pick yarn) and the `start:dev-client` script.
+- `eas.json` already had the `development` profile (internal, `developmentClient: true`).
+- `app.json`: bundle ID / package `com.asifahmedsahil.stayora` (user choice), plus the `expo-secure-store` and `@clerk/expo` config plugins Clerk's native setup expects.
+- Checks: `expo install --check` up to date, `tsc` passes, `eslint src` passes, Expo Doctor 20/21 (duplicate lockfile only), `expo start --dev-client` starts Metro. `eas config` stops at "EAS project not configured": `eas init`, device registration and the cloud build are the user's steps.

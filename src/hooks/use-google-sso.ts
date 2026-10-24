@@ -23,7 +23,8 @@ export function useGoogleSso() {
     };
   }, []);
 
-  async function start() {
+  /** "cancelled" covers closing the browser and finishing the account on /sign-up. */
+  async function start(): Promise<"signed-in" | "cancelled" | "failed"> {
     setLoading(true);
     setError(null);
     try {
@@ -33,12 +34,16 @@ export function useGoogleSso() {
       });
       if (createdSessionId) {
         await setActive?.({ session: createdSessionId });
-      } else if (authSessionResult?.type === "success") {
+        return "signed-in";
+      }
+      if (authSessionResult?.type === "success") {
         // Clerk needs more details to finish the account.
         router.push("/sign-up");
       }
+      return "cancelled";
     } catch (err) {
       setError(ssoErrorMessage(err));
+      return "failed";
     } finally {
       setLoading(false);
     }

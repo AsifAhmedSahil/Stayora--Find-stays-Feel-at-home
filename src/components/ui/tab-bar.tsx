@@ -1,13 +1,17 @@
-import { useState } from "react";
+import { type ComponentType, useState } from "react";
 import { Platform, Pressable, type StyleProp, type ViewStyle } from "react-native";
-import { GlassView } from "expo-glass-effect";
+import { GlassView, type GlassViewProps } from "expo-glass-effect";
 import { styled } from "react-native-css/native";
 import { cn } from "@/lib/cn";
 import { AppText } from "./app-text";
 import { Icon } from "./icon";
 import type { IconName } from "./icons";
 
-const StyledGlassView = styled(GlassView, { className: "style" });
+// SDK 58's GlassViewProps carries a typed `ref` that makes styled()'s inferred props exceed TypeScript's
+// union limit. The tab bar never takes a ref, so style the ref-less props.
+const StyledGlassView = styled(GlassView as ComponentType<Omit<GlassViewProps, "ref">>, {
+  className: "style",
+});
 
 export type TabItem = {
   key: string;

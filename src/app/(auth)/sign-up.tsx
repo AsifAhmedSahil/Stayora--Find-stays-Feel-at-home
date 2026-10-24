@@ -1,22 +1,25 @@
+import { useSignUp } from "@clerk/expo";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { useRef, useState } from "react";
-import { View, type TextInput } from "react-native";
+import { View, type TextInputInstance } from "react-native";
 import { AuthFooterLink } from "@/components/auth/auth-footer-link";
 import { AuthScreen } from "@/components/auth/auth-screen";
 import { OrDivider } from "@/components/auth/or-divider";
 import { PasswordField } from "@/components/auth/password-field";
 import { SocialButtons } from "@/components/auth/social-buttons";
 import { Alert, Button, TextField } from "@/components/ui";
-import { mockAuth } from "@/lib/auth/mock-auth";
+import { clerkErrorMessage } from "@/lib/auth/errors";
+import { splitName } from "@/lib/auth/flows";
 import { hasErrors, validateSignUp, type FieldErrors } from "@/lib/auth/validate";
 
 type Field = "name" | "email" | "password";
 
 export default function SignUp() {
   const router = useRouter();
-  const emailRef = useRef<TextInput>(null);
-  const passwordRef = useRef<TextInput>(null);
+  const { signUp } = useSignUp();
+  const emailRef = useRef<TextInputInstance>(null);
+  const passwordRef = useRef<TextInputInstance>(null);
   const [values, setValues] = useState({ name: "", email: "", password: "" });
   const [errors, setErrors] = useState<FieldErrors<Field>>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -37,14 +40,17 @@ export default function SignUp() {
       return;
     }
     setLoading(true);
-    const result = await mockAuth.signUp.create({
-      name: values.name.trim(),
-      email: values.email.trim(),
+    const created = await signUp.password({
+      emailAddress: values.email.trim(),
       password: values.password,
+      ...splitName(values.name),
     });
+    const sent = created.error ? created : await signUp.verifications.sendEmailCode();
     setLoading(false);
-    if (result.error) {
-      setFormError(result.error);
+    if (sent.error) {
+      const { message, field } = clerkErrorMessage(sent.error);
+      if (field === "email" || field === "password") setErrors({ [field]: message });
+      else setFormError(message);
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
       return;
     }
@@ -125,6 +131,8 @@ export default function SignUp() {
         onPress={submit}
         className="mt-6"
       />
+      {/* Clerk's bot protection mounts its widget here when it's enabled. */}
+      <View nativeID="clerk-captcha" />
 
       <OrDivider />
       <SocialButtons />

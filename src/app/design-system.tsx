@@ -13,6 +13,7 @@ import { StatusBar } from "expo-status-bar";
 import {
   Pressable,
   ScrollView,
+  type ScrollViewInstance,
   View,
   useWindowDimensions,
   type LayoutChangeEvent,
@@ -126,7 +127,7 @@ export default function DesignSystemScreen() {
 
 function DesignSystemGallery() {
   const { from, y } = useLocalSearchParams<{ from?: string; y?: string }>();
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   const appliedQueryRef = useRef<string | null>(null);
   const queryLayoutReadyRef = useRef(false);
   const gridTop = useRef(0);
