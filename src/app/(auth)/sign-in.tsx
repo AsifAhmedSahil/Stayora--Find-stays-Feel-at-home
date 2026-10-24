@@ -1,15 +1,16 @@
+import { useSignIn } from "@clerk/expo";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { useRef, useState } from "react";
-import { Pressable, View, type TextInput } from "react-native";
+import { Pressable, View, type TextInputInstance } from "react-native";
 import { AuthFooterLink } from "@/components/auth/auth-footer-link";
 import { AuthScreen } from "@/components/auth/auth-screen";
 import { OrDivider } from "@/components/auth/or-divider";
 import { PasswordField } from "@/components/auth/password-field";
 import { SocialButtons } from "@/components/auth/social-buttons";
 import { Alert, AppText, Button, TextField } from "@/components/ui";
-import { authErrors } from "@/lib/auth/errors";
-import { mockAuth } from "@/lib/auth/mock-auth";
+import { authErrors, clerkErrorMessage } from "@/lib/auth/errors";
+import { stayOnScreen } from "@/lib/auth/flows";
 import { hasErrors, validateSignIn, type FieldErrors } from "@/lib/auth/validate";
 
 type Field = "email" | "password";
@@ -17,7 +18,8 @@ type Notice = { variant: "error" | "info"; message: string };
 
 export default function SignIn() {
   const router = useRouter();
-  const passwordRef = useRef<TextInput>(null);
+  const { signIn } = useSignIn();
+  const passwordRef = useRef<TextInputInstance>(null);
   const [values, setValues] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState<FieldErrors<Field>>({});
   const [notice, setNotice] = useState<Notice | null>(null);
@@ -38,21 +40,44 @@ export default function SignIn() {
       return;
     }
     setLoading(true);
-    const result = await mockAuth.signIn.password({
-      email: values.email.trim(),
-      password: values.password,
-    });
+    const outcome = await passwordSignIn();
     setLoading(false);
-    if (result.error) {
-      setNotice({ variant: "error", message: result.error });
-      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
-      return;
-    }
-    if (result.next === "verify") {
+    if (outcome === "verify") {
       router.push({ pathname: "/verify", params: { flow: "sign-in" } });
       return;
     }
+    if (outcome) {
+      const { message, field } = clerkErrorMessage(outcome);
+      if (field === "email" || field === "password") setErrors({ [field]: message });
+      else setNotice({ variant: "error", message });
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
+      return;
+    }
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+  }
+
+  /** Null once the session is active, "verify" when a new device needs an email code, otherwise the error. */
+  async function passwordSignIn(): Promise<unknown> {
+    const { error } = await signIn.password({
+      emailAddress: values.email.trim(),
+      password: values.password,
+    });
+    if (error) return error;
+    if (signIn.status === "complete") {
+      return (await signIn.finalize(stayOnScreen)).error;
+    }
+    const emailSecondFactor = signIn.supportedSecondFactors.some(
+      (factor) => factor.strategy === "email_code",
+    );
+    if (
+      (signIn.status === "needs_client_trust" || signIn.status === "needs_second_factor") &&
+      emailSecondFactor
+    ) {
+      const sent = await signIn.mfa.sendEmailCode();
+      return sent.error ?? "verify";
+    }
+    // Statuses this instance doesn't use (e.g. needs_protect_check) get the generic copy.
+    return new Error(`Unhandled sign-in status ${signIn.status}`);
   }
 
   return (
@@ -123,6 +148,8 @@ export default function SignIn() {
         onPress={submit}
         className="mt-2"
       />
+      {/* Clerk's bot protection mounts its widget here when it's enabled. */}
+      <View nativeID="clerk-captcha" />
 
       <OrDivider />
       <SocialButtons />

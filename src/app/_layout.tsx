@@ -1,3 +1,4 @@
+import "@/lib/react-native-css-compat";
 import "../global.css";
 import { ClerkProvider } from "@clerk/expo";
 import { tokenCache } from "@clerk/expo/token-cache";
@@ -18,7 +19,7 @@ export default function RootLayout() {
     return <RootNavigator />;
   }
 
-  // Auth is mocked for now: Clerk stays mounted, but the guard reads `useSession()`.
+  // `tokenCache` keeps the session in expo-secure-store, so it survives restarts.
   return (
     <ClerkProvider publishableKey={clerkPublishableKey} tokenCache={tokenCache}>
       <RootNavigator />
@@ -28,12 +29,17 @@ export default function RootLayout() {
 
 function RootNavigator() {
   const { isLoaded: authLoaded, isSignedIn } = useSession();
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     "PlusJakartaSans-Regular": require("@/assets/fonts/PlusJakartaSans-Regular.ttf"),
     "PlusJakartaSans-Medium": require("@/assets/fonts/PlusJakartaSans-Medium.ttf"),
     "PlusJakartaSans-Bold": require("@/assets/fonts/PlusJakartaSans-Bold.ttf"),
   });
-  const ready = fontsLoaded && authLoaded;
+  // A font error falls back to the system font instead of leaving a blank screen.
+  const ready = (fontsLoaded || fontError != null) && authLoaded;
+
+  useEffect(() => {
+    if (fontError) console.warn(`Fonts failed to load: ${fontError.message}`);
+  }, [fontError]);
 
   useEffect(() => {
     if (ready) SplashScreen.hide();

@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Pressable, TextInput, View } from "react-native";
+import { Pressable, TextInput, View, type TextInputInstance } from "react-native";
 import { AppText } from "@/components/ui";
 import { cn } from "@/lib/cn";
 
@@ -15,7 +15,7 @@ type CodeInputProps = {
 
 /** Six boxes over one hidden input, so paste and iOS one-time-code autofill work. */
 export function CodeInput({ value, onChangeText, onComplete, error, editable = true }: CodeInputProps) {
-  const inputRef = useRef<TextInput>(null);
+  const inputRef = useRef<TextInputInstance>(null);
   const [focused, setFocused] = useState(false);
   const activeIndex = Math.min(value.length, CODE_LENGTH - 1);
 

@@ -1,3 +1,4 @@
+import { useSignIn, useSignUp } from "@clerk/expo";
 import * as Haptics from "expo-haptics";
 import { Redirect, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
@@ -5,16 +6,25 @@ import { Pressable, View } from "react-native";
 import { AuthScreen } from "@/components/auth/auth-screen";
 import { CODE_LENGTH, CodeInput } from "@/components/auth/code-input";
 import { Alert, AppText, Button } from "@/components/ui";
-import { authErrors } from "@/lib/auth/errors";
-import { MOCK_VERIFICATION_CODE, mockAuth, useMockAuthState } from "@/lib/auth/mock-auth";
+import { authErrors, clerkErrorMessage } from "@/lib/auth/errors";
+import { CLERK_TEST_CODE, isClerkTestEmail, stayOnScreen } from "@/lib/auth/flows";
 
 const RESEND_SECONDS = 30;
 
 export default function Verify() {
   const { flow } = useLocalSearchParams<{ flow?: string }>();
-  const { pending } = useMockAuthState();
-  // Kept from the first render: after a successful check `pending` clears while the guard navigates.
-  const [startedWith] = useState(pending);
+  const { signUp } = useSignUp();
+  const { signIn } = useSignIn();
+  // Kept from the first render: once the code passes, the attempt completes while the guard navigates.
+  const [startedWith] = useState(() => {
+    if (flow === "sign-in") {
+      const waiting = signIn.status === "needs_client_trust" || signIn.status === "needs_second_factor";
+      return waiting ? { flow: "sign-in" as const, email: signIn.identifier ?? "" } : null;
+    }
+    const waiting =
+      signUp.status === "missing_requirements" && signUp.unverifiedFields.includes("email_address");
+    return waiting ? { flow: "sign-up" as const, email: signUp.emailAddress ?? "" } : null;
+  });
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | undefined>();
   const [notice, setNotice] = useState<string | null>(null);
@@ -42,10 +52,10 @@ export default function Verify() {
     setError(undefined);
     setNotice(null);
     setLoading(true);
-    const result = await mockAuth.verify.code(value);
+    const failure = await checkCode(value);
     setLoading(false);
-    if (result.error) {
-      setError(result.error);
+    if (failure) {
+      setError(clerkErrorMessage(failure).message);
       setCode("");
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
       return;
@@ -53,10 +63,31 @@ export default function Verify() {
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
   }
 
+  /** Null once the session is active, otherwise the error. */
+  async function checkCode(value: string): Promise<unknown> {
+    if (isSignIn) {
+      const { error: checkError } = await signIn.mfa.verifyEmailCode({ code: value });
+      if (checkError) return checkError;
+      if (signIn.status !== "complete") return new Error(`Sign-in still ${signIn.status}`);
+      return (await signIn.finalize(stayOnScreen)).error;
+    }
+    const { error: checkError } = await signUp.verifications.verifyEmailCode({ code: value });
+    if (checkError) return checkError;
+    if (signUp.status !== "complete") return new Error(`Sign-up missing ${signUp.missingFields}`);
+    return (await signUp.finalize(stayOnScreen)).error;
+  }
+
   async function resend() {
     setSecondsLeft(RESEND_SECONDS);
     setError(undefined);
-    await mockAuth.verify.resend();
+    setNotice(null);
+    const { error: sendError } = isSignIn
+      ? await signIn.mfa.sendEmailCode()
+      : await signUp.verifications.sendEmailCode();
+    if (sendError) {
+      setError(clerkErrorMessage(sendError).message);
+      return;
+    }
     setNotice(`We sent a new code to ${startedWith?.email}.`);
   }
 
@@ -80,9 +111,9 @@ export default function Verify() {
           error={error}
           editable={!loading}
         />
-        {__DEV__ ? (
+        {__DEV__ && isClerkTestEmail(startedWith.email) ? (
           <AppText variant="caption" tone="secondary" className="mt-2">
-            Mock auth: use code {MOCK_VERIFICATION_CODE}
+            Test email: use code {CLERK_TEST_CODE}
           </AppText>
         ) : null}
       </View>

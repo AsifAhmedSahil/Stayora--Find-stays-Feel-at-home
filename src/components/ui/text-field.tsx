@@ -2,6 +2,7 @@ import { useState, type ReactNode, type Ref } from "react";
 import {
   TextInput,
   type StyleProp,
+  type TextInputInstance,
   type TextInputProps,
   type ViewStyle,
   View,
@@ -19,7 +20,7 @@ type TextFieldProps = Omit<TextInputProps, "accessibilityLabel" | "style"> & {
   trailingIcon?: IconName;
   trailing?: ReactNode;
   error?: string;
-  ref?: Ref<TextInput>;
+  ref?: Ref<TextInputInstance>;
   className?: string;
   style?: StyleProp<ViewStyle>;
 };
