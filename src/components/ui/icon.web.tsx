@@ -16,6 +16,7 @@ const sizes = {
 const colorTokens = {
   default: "ink",
   onBrand: "on-brand",
+  onMedia: "on-media",
   secondary: "muted",
   accent: "accent",
   success: "success",

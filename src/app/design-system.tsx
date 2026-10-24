@@ -17,6 +17,8 @@ import {
   useWindowDimensions,
   type LayoutChangeEvent,
 } from "react-native";
+import { PasswordField } from "@/components/auth/password-field";
+import { GoogleLogo } from "@/components/brand/google-logo";
 import { StayoraWordmark } from "@/components/brand/stayora-wordmark";
 import {
   Alert,
@@ -310,8 +312,12 @@ function DesignSystemGallery() {
               onLayout={(event) => recordSectionTop("03-typography", event)}
             >
               <AppText variant="display">Make room for wonder</AppText>
+              <AppText variant="hero">Find a stay that fits your story</AppText>
               <AppText variant="title">A quieter kind of getaway</AppText>
               <AppText variant="heading">Find a place to land</AppText>
+              <AppText variant="lead" tone="secondary">
+                From mountain cabins to oceanfront villas.
+              </AppText>
               <AppText variant="body">
                 Places for slow mornings, open windows, and one more night away.
               </AppText>
@@ -368,6 +374,13 @@ function DesignSystemGallery() {
               <Button title="Add to saved" variant="lavender" icon="heart" iconPosition="leading" />
               <Button title="Searching" loading />
               <Button title="Unavailable" disabled />
+              <Button title="Get started" size="pill" icon="arrowRight" iconPosition="end" />
+              <Button
+                title="Continue with Google"
+                size="pill"
+                variant="secondary"
+                leading={<GoogleLogo />}
+              />
               <View className="flex-row flex-wrap gap-3">
                 <IconButton
                   icon="heart"
@@ -397,6 +410,20 @@ function DesignSystemGallery() {
                 placeholder="Your password"
                 secureTextEntry
                 editable={false}
+              />
+              <TextField
+                variant="filled"
+                label="Email address"
+                leadingIcon="mail"
+                placeholder="you@example.com"
+              />
+              <PasswordField label="Password" placeholder="At least 8 characters" />
+              <TextField
+                variant="filled"
+                label="Full name"
+                leadingIcon="user"
+                placeholder="e.g. Adrian Hajdin"
+                error="Enter your full name."
               />
               <TextField
                 label="Search by name"
