@@ -1,5 +1,5 @@
-import { StayoraWordmarkBase } from "./stayora-wordmark-base";
+import { StayoraWordmarkBase, type WordmarkSize } from "./stayora-wordmark-base";
 
-export function StayoraWordmark() {
-  return <StayoraWordmarkBase yellow="var(--color-brand-yellow)" />;
+export function StayoraWordmark({ size }: { size?: WordmarkSize }) {
+  return <StayoraWordmarkBase yellow="var(--color-brand-yellow)" size={size} />;
 }

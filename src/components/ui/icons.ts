@@ -7,14 +7,18 @@ import {
   CalendarDays,
   Check,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
   CircleHelp,
   CreditCard,
+  Eye,
+  EyeOff,
   Heart,
   House,
   Info,
   List,
   LockKeyhole,
+  Mail,
   Map,
   MapPin,
   Minus,
@@ -42,14 +46,18 @@ export const icons = {
   calendar: CalendarDays,
   check: Check,
   chevronDown: ChevronDown,
+  chevronLeft: ChevronLeft,
   chevronRight: ChevronRight,
   help: CircleHelp,
   creditCard: CreditCard,
+  eye: Eye,
+  eyeOff: EyeOff,
   heart: Heart,
   home: House,
   info: Info,
   list: List,
   lock: LockKeyhole,
+  mail: Mail,
   map: Map,
   mapPin: MapPin,
   minus: Minus,
@@ -77,4 +85,5 @@ export type IconTone =
   | "danger"
   | "warning"
   | "info"
-  | "onBrand";
+  | "onBrand"
+  | "onMedia";

@@ -3,13 +3,18 @@ import { cn } from "@/lib/cn";
 
 const variants = {
   wordmark: "font-display text-wordmark",
+  wordmarkSm: "font-display text-wordmark-sm",
   display: "font-heading text-display",
+  hero: "font-heading text-hero",
   title: "font-heading text-title",
   heading: "font-heading text-heading",
+  lead: "font-body text-lead",
   body: "font-body text-body",
   label: "font-body-medium text-label",
   caption: "font-body text-caption",
   button: "font-body-semibold text-button",
+  buttonLarge: "font-body-semibold text-button-lg",
+  buttonStrong: "font-heading text-button-lg",
 } as const;
 
 export type AppTextVariant = keyof typeof variants;
@@ -22,7 +27,8 @@ export type TextTone =
   | "warning"
   | "info"
   | "inverted"
-  | "onBrand";
+  | "onBrand"
+  | "onMedia";
 
 const tones = {
   default: "text-ink",
@@ -34,6 +40,7 @@ const tones = {
   info: "text-info",
   inverted: "text-canvas",
   onBrand: "text-on-brand",
+  onMedia: "text-on-media",
 } as const;
 
 type AppTextProps = TextProps & {

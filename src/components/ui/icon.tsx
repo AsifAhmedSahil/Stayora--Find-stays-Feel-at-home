@@ -22,6 +22,7 @@ export function Icon({
 }: IconProps) {
   const ink = useUnstableNativeVariable("--color-ink");
   const onBrand = useUnstableNativeVariable("--color-on-brand");
+  const onMedia = useUnstableNativeVariable("--color-on-media");
   const muted = useUnstableNativeVariable("--color-muted");
   const accent = useUnstableNativeVariable("--color-accent");
   const success = useUnstableNativeVariable("--color-success");
@@ -32,6 +33,7 @@ export function Icon({
   const colors = {
     default: ink,
     onBrand,
+    onMedia,
     secondary: muted,
     accent,
     success,
