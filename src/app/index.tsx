@@ -6,3 +6,5 @@ export default function Index() {
 
   return <Redirect href={isSignedIn ? "/home" : "/onboarding"} />;
 }
+
+// update
